@@ -17,26 +17,21 @@ const Results = () => {
       console.log("Wikidata response:", data);
       // Navigate to the P345 property
       const imdbId = data.entities[qid].claims.P345[0].mainsnak.datavalue.value;
-
-      console.log(`IMDb ID: ${imdbId}`);
-      return imdbId;
+      const wiki = data.entities[qid].sitelinks.enwiki.url;
+      return {imdbId, wiki};
     } catch (error) {
       console.error("Error fetching data:", error);
       return null;
     }
   };
 
-  const getImdbLink = async (face) => {
-    const imbdUrl = face.Urls.find(url => url.includes("imdb.com"));
-    if (imbdUrl) {
-      return imbdUrl.replace("https://", "").replace("http://", "");
-    } 
+  const getImdbData = async (face) => {
     if (face.Urls && face.Urls[0]) {
-        let id = await fetchImdbId(face.Urls[0].split("/").pop());
-        return `imdb.com/name/${id}`;
+        let imdbData = await fetchImdbId(face.Urls[0].split("/").pop());
+        return imdbData ? {imdb: `www.imdb.com/name/${imdbData.imdbId}`, wiki: imdbData.wiki} : {};
 
     }
-    return null;
+    return {};
   };
 
   const handlePhotoChange = (event) => {
@@ -47,6 +42,7 @@ const Results = () => {
 
     const reader = new FileReader();
     reader.onload = async (e) => {
+      setResult(null);
       const imageBytes = e.target.result.split(",")[1]; // Remove the base64 prefix
       const [response, message] = await recognise(imageBytes);
       setResult(response);
@@ -56,13 +52,10 @@ const Results = () => {
       if (updatedResponse.CelebrityFaces) {
         let newCelebFaces = [];
         for (let i = 0; i < updatedResponse.CelebrityFaces.length; i++) {
-          const imdbUrl = await getImdbLink(updatedResponse.CelebrityFaces[i]);
-          const newUrls = imdbUrl
-            ? [...updatedResponse.CelebrityFaces[i].Urls, imdbUrl]
-            : [...updatedResponse.CelebrityFaces[i].Urls];
+          const imdbData = await getImdbData(updatedResponse.CelebrityFaces[i]);
           newCelebFaces.push({
             ...updatedResponse.CelebrityFaces[i],
-            imdb: imdbUrl
+           ...imdbData
           });
         }
         updatedResponse = {
@@ -90,12 +83,13 @@ const Results = () => {
       <br></br>
       </div>
       <input type="file" accept="image/*" onChange={handlePhotoChange} />
-      {loading ? "loading..." : null}
-      {result && (
+    
+      { (
         <div style={{ marginTop: "20px" ,display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
-          <img src={image} alt="Uploaded" style={{ maxHeight: "200px" }} />
-          <h3>In this image:</h3>
-          {result.CelebrityFaces && result.CelebrityFaces.length > 0 ? (
+          {image &&<img src={image} alt="Uploaded" style={{ maxHeight: "200px" }} />}
+            {result ? <h3>In this image:</h3> : null}
+            {loading ? <p>Analyzing photo...</p> : null}
+          {result && result.CelebrityFaces && result.CelebrityFaces.length > 0 ? (
             <ul style={{textAlign: "center"}}>
               {result.CelebrityFaces.map((celebrity, index) => {
                const backgroundSize = (0.70 / celebrity.Face.BoundingBox.Width) * 100;
@@ -118,16 +112,26 @@ const Results = () => {
                     }}>
                    
                   </div>
+                   {checking ? celebrity.Name : 
+                    <div style={{ display: "inline-block", verticalAlign: "middle" }}>
+                      <div style={{display: "inline-block"}}>
+                        <span><a style={{fontWeight: "bold", fontSize: "1.25em"}} target="_blank" href={`https://${celebrity.imdb}`}>{celebrity.Name }</a> <span style={{ marginLeft: "5px", fontSize: "0.8em", color: "#666" }}>{celebrity.MatchConfidence.toFixed(0)}{"% Match"}</span></span>
+                      </div>
+                      <div style={{ display: "flex", gap: "10px", marginTop: "5px", fontSize: "0.9em", color: "#666" }} ><span>More Info: </span>
+                        <a href={`https://${celebrity.imdb}`} target="_blank">IMDB</a>
 
-                  <a target="_blank" href={`https://${celebrity.imdb}`}>{celebrity.Name}</a><span style={{ marginLeft: "5px", fontSize: "0.8em", color: "#666" }}>{celebrity.MatchConfidence.toFixed(0)}{"% Match"}</span>
-
-                  {checking ? "searching imbd..." : null}
+                        <a target="_blank" href={celebrity.wiki}>Wikipedia</a>
+                      </div>
+                    </div>
+                   
+                  }
+                 
                 </li>
               )})}
             </ul>
-          ) : (
-            <p>No celebrities recognized in the photo.</p>
-          )}
+          ) : 
+            null
+          }
         </div>
       )}
     </div>
