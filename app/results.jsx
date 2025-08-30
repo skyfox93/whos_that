@@ -87,7 +87,7 @@ const Results = () => {
       { (
         <div style={{ marginTop: "20px" ,display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
           {image &&<img src={image} alt="Uploaded" style={{ maxHeight: "200px" }} />}
-            {result ? <h3>In this image:</h3> : null}
+            {result ? <h4>In this image:</h4> : null}
             {loading ? <p>Analyzing photo...</p> : null}
           {result && result.CelebrityFaces && result.CelebrityFaces.length > 0 ? (
             <ul style={{textAlign: "center"}}>
