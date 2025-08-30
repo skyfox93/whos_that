@@ -79,7 +79,13 @@ const Results = () => {
 
   return (
     <form style={{ padding: "20px" }}>
-      <h1>Celebrity Recognition</h1>
+      <img src="https://cdn.mos.cms.futurecdn.net/CsvAuuLtsSQj2BBZypvaC7-1200-80.jpg.webp" height="100px" width="auto" style={{ position: "relative" }}/>
+      <svg width="50" height="50" style={{ position: "absolute", top: 30, left: 80 }}>
+        <rect width="50" height="50" style={{ fill: "rgba(255, 255, 255, 0.2)", stroke: "red", strokeWidth: 2 }} />
+      </svg>
+      <h3>Who's that actor?</h3>
+      {(!result) ? "Identify actors using your smartphone camera. Take or upload a photo to begin" : null}
+      <br></br>
       <input type="file" accept="image/*" onChange={handlePhotoChange} />
       {loading ? "loading..." : null}
       {result && (
@@ -90,7 +96,21 @@ const Results = () => {
             <ul>
               {result.CelebrityFaces.map((celebrity, index) => (
                 <li key={index}>
-                  <img width={100} height={100} src={image} style={{border: "2px red inset", objectFit: "fill", objectPosition: `${celebrity.Face.BoundingBox.Left * 120}% ${celebrity.Face.BoundingBox.Top * 100}%`, }} alt={celebrity.Name} />
+                  <div
+                    style={{
+                      backgroundImage: `url("${image}")`,
+                      backgroundPosition: `${celebrity.Face.BoundingBox.Left * 120}% ${celebrity.Face.BoundingBox.Top * 120}%`,
+                      backgroundSize: `${50 / celebrity.Face.BoundingBox.Width}% ${50 / celebrity.Face.BoundingBox.Height}%`,
+                      border: "1px solid #ccc",
+                      display: "inline-block",
+                      marginRight: "10px",
+                      width: "100px",
+                      height: "100px",
+                      verticalAlign: "middle",
+                    }}>
+                   
+                  </div>
+
                   <a target="_blank" href={`https://${celebrity.imdb}`}>{celebrity.Name}</a> - Confidence:{" "}
                   {celebrity.MatchConfidence.toFixed(2)}%
                   {checking ? "searching imbd..." : null}
