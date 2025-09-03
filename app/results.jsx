@@ -5,6 +5,7 @@ import recognise from "./recognise";
 const Results = () => {
   const [result, setResult] = useState(null);
   const [image, setImage] = useState(null);
+  const [dimensions, setDimensions] = useState({ naturalHeight: 0, naturalWidth: 0 });
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
 
@@ -14,7 +15,6 @@ const Results = () => {
     try {
       const response = await fetch(url);
       const data = await response.json();
-      console.log("Wikidata response:", data);
       // Navigate to the P345 property
       const imdbId = data.entities[qid].claims.P345[0].mainsnak.datavalue.value;
       const wiki = data.entities[qid].sitelinks.enwiki.url;
@@ -24,6 +24,11 @@ const Results = () => {
       return null;
     }
   };
+
+  const handleImageload = (e)=> {
+        const { naturalHeight, naturalWidth } = e.target;
+        setDimensions({ naturalHeight, naturalWidth });
+    };
 
   const getImdbData = async (face) => {
     if (face.Urls && face.Urls[0]) {
@@ -72,7 +77,7 @@ const Results = () => {
   return (
     <div style={{ padding: "20px", textAlign: "center" }}>
       <div style={{ position: "relative", display: "inline-block" }}>
-      <img src="https://cdn.mos.cms.futurecdn.net/CsvAuuLtsSQj2BBZypvaC7-1200-80.jpg.webp" height="100px" width="auto" style={{ position: "relative" }}/>
+      <img  src="https://cdn.mos.cms.futurecdn.net/CsvAuuLtsSQj2BBZypvaC7-1200-80.jpg.webp" height="100px" width="auto" style={{ position: "relative" }}/>
       <svg width="50" height="50" style={{ position: "absolute", top: 10, left: 60 }}>
         <rect width="50" height="50" style={{ fill: "rgba(255, 255, 255, 0.2)", stroke: "red", strokeWidth: 2 }} />
       </svg>
@@ -86,19 +91,20 @@ const Results = () => {
     
       { (
         <div style={{ marginTop: "20px" ,display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
-          {image &&<img src={image} alt="Uploaded" style={{ maxHeight: "200px" }} />}
+          {image &&<img onLoad={handleImageload} src={image} alt="Uploaded" style={{ maxHeight: "200px" }} />}
             {result ? <h4>In this image:</h4> : null}
             {loading ? <p>Analyzing photo...</p> : null}
           {result && result.CelebrityFaces && result.CelebrityFaces.length > 0 ? (
             <ul style={{textAlign: "center"}}>
               {result.CelebrityFaces.map((celebrity, index) => {
-               const backgroundSize = (0.70 / celebrity.Face.BoundingBox.Width) * 100;
+               const backgroundSize = (0.75 / celebrity.Face.BoundingBox.Width) * 100;
+               const heightOffset = (celebrity.Face.BoundingBox.Top - celebrity.Face.BoundingBox.Width/4) *backgroundSize;
                 return (
                 <li key={celebrity.Name + index} style={{ margin: "10px auto", listStyleType: "none", textAlign: "left" }}>
                   <div
                     style={{
                       backgroundImage: `url("${image}")`,
-                      backgroundPosition: `left -${(celebrity.Face.BoundingBox.Left - celebrity.Face.BoundingBox.Width/2) * backgroundSize}px top ${(celebrity.Face.BoundingBox.Top + celebrity.Face.BoundingBox.Height/2) * 100}%`,
+                      backgroundPosition: `left -${(celebrity.Face.BoundingBox.Left - celebrity.Face.BoundingBox.Width * 0.25) * backgroundSize}px top -${heightOffset}px`,
                       backgroundSize: `${backgroundSize}%`,
                       border: "2px solid #666",
                       display: "inline-block",
@@ -110,7 +116,6 @@ const Results = () => {
                       borderRadius: "8px",
                     
                     }}>
-                   
                   </div>
                    {checking ? celebrity.Name : 
                     <div style={{ display: "inline-block", verticalAlign: "middle" }}>
