@@ -98,12 +98,12 @@ const Results = () => {
           {result && result.CelebrityFaces && result.CelebrityFaces.length > 0 ? (
             <ul style={{ textAlign: "center" }}>
               {result.CelebrityFaces.map((celebrity, index) => {
-                console.log("celebrity.Face.BoundingBox:", celebrity.Face.BoundingBox);
-                const viewBoxScale = 0.5;
+                const sizeOfFace = 0.5; 
                 const viewBoxSize = 100;
-                const backgroundSize = (1 / celebrity.Face.BoundingBox.Width) * viewBoxSize * viewBoxScale;
-                const backgroundWidthOffset = (celebrity.Face.BoundingBox.Left - celebrity.Face.BoundingBox.Width / 2) * backgroundSize
-                const heightOffset = (celebrity.Face.BoundingBox.Top - (celebrity.Face.BoundingBox.Height / 2)) * backgroundSize * (dimensions.naturalHeight / dimensions.naturalWidth);
+                const sizeOfFacePx = viewBoxSize * sizeOfFace ;
+                const backgroundSize = (1 / celebrity.Face.BoundingBox.Width) *  sizeOfFacePx ;
+                const backgroundWidthOffset = (celebrity.Face.BoundingBox.Left * backgroundSize - sizeOfFacePx/2);
+                const heightOffset = (celebrity.Face.BoundingBox.Top * backgroundSize ) * (dimensions.naturalHeight / dimensions.naturalWidth)- (sizeOfFacePx/2);
 
                 return (
                   <li key={celebrity.Name + index} style={{ margin: "10px auto", listStyleType: "none", textAlign: "left" }}>
