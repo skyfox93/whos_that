@@ -9,13 +9,12 @@ const Results = () => {
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
 
-  const fetchImdbId = async (qid) => {
+  const fetchUrls = async (qid) => {
     const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`;
 
     try {
       const response = await fetch(url);
       const data = await response.json();
-      console.log("Wikidata response:", data);
       // Navigate to the P345 property
       const imdbId = data.entities[qid].claims.P345[0].mainsnak.datavalue.value;
       const wiki = data.entities[qid].sitelinks.enwiki.url;
@@ -33,7 +32,7 @@ const Results = () => {
 
   const getImdbData = async (face) => {
     if (face.Urls && face.Urls[0]) {
-      let imdbData = await fetchImdbId(face.Urls[0].split("/").pop());
+      let imdbData = await fetchUrls(face.Urls[0].split("/").pop());
       return imdbData ? { imdb: `www.imdb.com/name/${imdbData.imdbId}`, wiki: imdbData.wiki } : {};
 
     }

@@ -15,8 +15,6 @@ export async function recognise (imageBytes){
   }
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-    console.log("Access Key ID:", accessKeyId);
-    console.log("Secret Access Key:", secretAccessKey); 
     const client = new RekognitionClient({
     region: "us-east-1",
     credentials: {
